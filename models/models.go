@@ -19,17 +19,17 @@ func NewModels(db *sql.DB) Models {
 
 // Movie is the type for movies
 type Movie struct {
-	ID          int          `json:"id"`
-	Title       string       `json:"title"`
-	Description string       `json:"description"`
-	Year        int          `json:"year"`
-	ReleaseDate time.Time    `json:"releaseDate"`
-	Rating      int          `json:"rating"`
-	Runtime     int          `json:"runtime"`
-	MPAARating  string       `json:"mpaaRating"`
-	CreatedAt   time.Time    `json:"createdAt"`
-	UpdatedAt   time.Time    `json:"updatedAt"`
-	MovieGenre  []MovieGenre `json:"genres"`
+	ID          int            `json:"id"`
+	Title       string         `json:"title"`
+	Description string         `json:"description"`
+	Year        int            `json:"year"`
+	ReleaseDate time.Time      `json:"releaseDate"`
+	Rating      int            `json:"rating"`
+	Runtime     int            `json:"runtime"`
+	MPAARating  string         `json:"mpaaRating"`
+	CreatedAt   time.Time      `json:"createdAt"`
+	UpdatedAt   time.Time      `json:"updatedAt"`
+	MovieGenre  map[int]string `json:"genres"`
 }
 
 // Genre is the type for genre
