@@ -2,10 +2,8 @@ package main
 
 import (
 	"errors"
-	"movies-api/models"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -24,17 +22,7 @@ func (app *application) getMovieDetails(w http.ResponseWriter, r *http.Request) 
 
 	app.logger.Println("id is", id)
 
-	movie := models.Movie{
-		ID:          id,
-		Title:       "My special movie",
-		Description: "Movie description",
-		Year:        2021,
-		ReleaseDate: time.Date(2021, 01, 01, 01, 0, 0, 0, time.Local),
-		Rating:      5,
-		MPAARating:  "PG-13",
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
-	}
+	movie, err := app.models.DB.Get(id)
 
 	err = app.writeJSON(w, http.StatusOK, movie, "movie")
 }
