@@ -123,13 +123,14 @@ func (m *DBModel) GetAll(genre ...int) ([]*Movie, error) {
 		}
 
 		// get the movie genre
-		genreQuery := `select
-										mg.id, mg.movie_id, mg.genre_id, g.genre_name
-									from
-										movies_genres mg
-										left join genres g on (g.id = mg.genre_id)
-									where
-										mg.movie_id = $1`
+		genreQuery := `
+			select 
+				mg.id, mg.movie_id, mg.genre_id, g.genre_name 
+			from 
+				movies_genres mg 
+				left join genres g on (g.id = mg.genre_id) 
+			where 
+				mg.movie_id = $1`
 
 		genreRows, err := m.DB.QueryContext(ctx, genreQuery, movie.ID)
 		if err != nil {
