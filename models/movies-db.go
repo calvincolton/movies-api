@@ -79,7 +79,7 @@ func (m *DBModel) Get(id int) (*Movie, error) {
 }
 
 // GetAll returns all movies and an error, if any
-func (m *DBModel) GetAll(genre ...int) ([]*Movie, error) {
+func (m *DBModel) GetAllMovies(genre ...int) ([]*Movie, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
