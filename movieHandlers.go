@@ -27,25 +27,6 @@ type MoviePayload struct {
 	MPAARating  string `json:"mpaaRating"`
 }
 
-func (app *application) getMovieDetails(w http.ResponseWriter, r *http.Request) {
-	params := httprouter.ParamsFromContext(r.Context())
-
-	id, err := strconv.Atoi(params.ByName("id"))
-	if err != nil {
-		app.logger.Print(errors.New("invalid id parameter"))
-		app.errorJSON(w, err)
-		return
-	}
-
-	movie, err := app.models.DB.Get(id)
-
-	err = app.writeJSON(w, http.StatusOK, movie, "movie")
-	if err != nil {
-		app.errorJSON(w, err)
-		return
-	}
-}
-
 func (app *application) getMovies(w http.ResponseWriter, r *http.Request) {
 	movies, err := app.models.DB.GetAllMovies()
 	if err != nil {
@@ -102,29 +83,49 @@ func (app *application) insertMovie(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (app *application) getMovieDetails(w http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
+
+	id, err := strconv.Atoi(params.ByName("id"))
+	if err != nil {
+		app.logger.Print(errors.New("invalid id parameter"))
+		app.errorJSON(w, err)
+		return
+	}
+
+	movie, err := app.models.DB.Get(id)
+
+	err = app.writeJSON(w, http.StatusOK, movie, "movie")
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+}
+
 func (app *application) updateMovie(w http.ResponseWriter, r *http.Request) {
 	var payload MoviePayload
-
-	err := json.NewDecoder(r.Body).Decode(&payload)
-	if err != nil {
-		app.errorJSON(w, err)
-		return
-	}
-
 	var movie models.Movie
 
-	id, err := strconv.Atoi(payload.ID)
+	params := httprouter.ParamsFromContext(r.Context())
+
+	id, err := strconv.Atoi(params.ByName("id"))
 	if err != nil {
 		app.errorJSON(w, err)
 		return
 	}
+
+	err = json.NewDecoder(r.Body).Decode(&payload)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
 	m, err := app.models.DB.Get(id)
 	if err != nil {
 		app.errorJSON(w, err)
 		return
 	}
 	movie = *m
-	movie.UpdatedAt = time.Now()
 
 	movie.Title = payload.Title
 	movie.Description = payload.Description
@@ -135,6 +136,7 @@ func (app *application) updateMovie(w http.ResponseWriter, r *http.Request) {
 	movie.MPAARating = payload.MPAARating
 	movie.CreatedAt = time.Now()
 	movie.UpdatedAt = time.Now()
+	movie.ID = id
 
 	// log.Println(movie.Title)
 
@@ -155,7 +157,31 @@ func (app *application) updateMovie(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *application) deleteMovies(w http.ResponseWriter, r *http.Request) {}
+func (app *application) deleteMovies(w http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
+
+	id, err := strconv.Atoi(params.ByName("id"))
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	err = app.models.DB.DeleteMovie(id)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	ok := jsonResp{
+		OK: true,
+	}
+
+	err = app.writeJSON(w, http.StatusOK, ok, "response")
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+}
 
 func (app *application) getGenres(w http.ResponseWriter, r *http.Request) {
 	genres, err := app.models.DB.GetAllGenres()
