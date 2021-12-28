@@ -14,8 +14,9 @@ import (
 func (app *application) enableCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "DELETE, POST, PUT, GET, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
+		w.Header().Set("Access-Control-Allow-Methods", "DELETE,POST,PUT,GET,OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Authorization")
+		// w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
 
 		next.ServeHTTP(w, r)
 	})
@@ -46,28 +47,28 @@ func (app *application) checkToken(next http.Handler) http.Handler {
 
 		claims, err := jwt.HMACCheck([]byte(token), []byte(app.config.jwt.secret))
 		if err != nil {
-			app.errorJSON(w, errors.New("unauthorized - failed hmac check"))
+			app.errorJSON(w, errors.New("unauthorized - failed hmac check"), http.StatusForbidden)
 			return
 		}
 
 		if !claims.Valid(time.Now()) {
-			app.errorJSON(w, errors.New("unauthorized - token expired"))
+			app.errorJSON(w, errors.New("unauthorized - token expired"), http.StatusForbidden)
 			return
 		}
 
 		if !claims.AcceptAudience("mydomain.com") {
-			app.errorJSON(w, errors.New("unauthorized - invalid audience"))
+			app.errorJSON(w, errors.New("unauthorized - invalid audience"), http.StatusForbidden)
 			return
 		}
 
 		if claims.Issuer != "mydomains.com" {
-			app.errorJSON(w, errors.New("unauthorized - invalid issuer"))
+			app.errorJSON(w, errors.New("unauthorized - invalid issuer"), http.StatusForbidden)
 			return
 		}
 
 		userID, err := strconv.ParseInt(claims.Subject, 10, 64)
 		if err != nil {
-			app.errorJSON(w, errors.New("unauthorized - unrecognized user"))
+			app.errorJSON(w, errors.New("unauthorized - unrecognized user"), http.StatusForbidden)
 			return
 		}
 
